@@ -1,13 +1,20 @@
 const createError = require("http-errors");
 const Users = require("../models/user");
 const bcrypt = require("bcrypt");
+
+const express = require("express");
 const cookieParser = require("cookie-parser");
+const app = express();
+app.use(cookieParser());
+
 const jwt = require("jsonwebtoken");
 const { v4: uuidv4 } = require("uuid");
 
 const saltRounds = 12;
 
 const regexPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,20}$/;
+const crypto = require("crypto");
+const secretKey = crypto.randomBytes(32).toString("hex");
 
 exports.register = async function (req, res, next) {
   try {
@@ -33,10 +40,7 @@ exports.register = async function (req, res, next) {
     await newUser.save(); // saves the user information into the database.
 
     //const token = uuidv4(); // assigns a token to the user. Token is stored in the variable token.
-    const crypto = require("crypto");
-
-    const secretKey = crypto.randomBytes(32).toString("hex");
-    console.log(secretKey);
+    console.log("register secret key",secretKey);
 
     const token = jwt.sign({ userId: newUser._id }, secretKey, {
       expiresIn: "1h",
@@ -81,10 +85,7 @@ exports.login = async function login(req, res, next) {
     // user.token = token;
     // await user.save();
     //const token = uuidv4(); // assigns a token to the user. Token is stored in the variable token.
-    const crypto = require("crypto");
-
-    const secretKey = crypto.randomBytes(32).toString("hex");
-    console.log(secretKey);
+    console.log("login secret key", secretKey);
 
     const token = jwt.sign({ userId: user._id }, secretKey, {
       expiresIn: "1h",
@@ -102,6 +103,36 @@ exports.login = async function login(req, res, next) {
     res.json({ token, message: "Login successful" });
   } catch (error) {
     next(error);
+  }
+};
+
+exports.authUser = async function authUser(req, res, next) {
+  // req.cookies comes back undefined - cookie parser isn't working. why?
+  console.log(req.cookies)
+  const tokenToDecode = req.cookies.token; //this throws error as undefined
+  console.log("auth secret key", secretKey)
+  if (!tokenToDecode) {
+    return res.sendStatus(403);
+  } else {
+    try {
+      const decoded = jwt.verify(
+        tokenToDecode,
+        secretKey,
+        function (err, decode) {
+          if (err) {
+            res.sendStatus(403);
+          } else {
+            console.log(decode);
+            return decode;
+          }
+        }
+      );
+      req.decodedToken = decoded;
+      console.log(decoded)
+      next();
+    } catch (err) {
+      console.log(err);
+    }
   }
 };
 
