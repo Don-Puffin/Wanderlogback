@@ -46,7 +46,7 @@ exports.register = async function (req, res, next) {
 
     res
       .status(201)
-      .json({ token: newUser.token, message: "Registration Successful" });
+      .json({ status: 201, message: "Registration Successful" });
   } catch (error) {
     next(error);
   }
