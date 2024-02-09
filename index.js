@@ -15,8 +15,9 @@ mongoose
   .catch((err) => console.log(err));
 
 app.use(express.json());
-app.use(router);
 app.use(cookieParser());
+
+app.use(router);
 
 app.listen(port, () => {
   console.log(`Server started on port ${port}`);
