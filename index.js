@@ -3,8 +3,11 @@ const express = require("express");
 const axios = require("axios");
 const app = express();
 const port = process.env.PORT || 3001;
-const router = require("./routes/authRoutes.js");
+const authRouter = require("./routes/authRoutes.js");
+const postRouter = require("./routes/postRoutes.js");
+
 const mongoose = require("mongoose");
+const request = require("supertest");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
@@ -17,8 +20,10 @@ mongoose
 app.use(express.json());
 app.use(cookieParser());
 
-app.use(router);
+app.use("/auth", authRouter);
+app.use("/post", postRouter);
 
 app.listen(port, () => {
   console.log(`Server started on port ${port}`);
 });
+module.exports = app;

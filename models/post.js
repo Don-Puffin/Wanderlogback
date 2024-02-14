@@ -10,8 +10,8 @@ const post = new mongoose.Schema({
     likes: {type: Number, required: true},
     comments: [
         {
-            username: {type: String, required: true},
-            commentText: {type: String, required: true}
+            username: {type: String},
+            commentText: {type: String}
         }
     ]
 })
