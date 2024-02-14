@@ -1,5 +1,6 @@
 const createError = require("http-errors");
 const Users = require("../models/user");
+const Profile = require("../models/profile");
 const bcrypt = require("bcrypt");
 
 const jwt = require("jsonwebtoken");
@@ -26,10 +27,20 @@ exports.register = async function (req, res, next) {
       });
     }
 
-    const hashedPassword = await bcrypt.hash("password123", saltRounds); // takes password and hashes the password, encryption
+    const hashedPassword = await bcrypt.hash(password, saltRounds); // takes password and hashes the password, encryption
     const newUser = new Users({ username, password: hashedPassword }); // creates an instance of the userModel with the request from the frontend
+    const newUserProfile = new Profile({ 
+      username: username,
+      imageURL: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+      bio: "Hi! I'm using WanderLog.",
+      userLocation: "",
+      visitedPlaces: [{}],
+      wantToGoPlaces: [{}],
+      userPosts: []
+    });
 
     await newUser.save(); // saves the user information into the database.
+    await newUserProfile.save(); // saves the user profile info into the database.
 
     const token = jwt.sign({ userId: newUser._id }, secretKey, {
       expiresIn: "1h",
@@ -87,5 +98,6 @@ exports.login = async function login(req, res, next) {
 };
 
 exports.test = async function test(req, res, next) {
+  console.log(req.currentUser);
   res.send("test successful");
 };
