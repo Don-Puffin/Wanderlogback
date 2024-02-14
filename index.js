@@ -5,6 +5,7 @@ const app = express();
 const port = process.env.PORT || 3001;
 const router = require("./routes/authRoutes.js");
 const mongoose = require("mongoose");
+const request = require("supertest");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
@@ -19,6 +20,7 @@ app.use(cookieParser());
 
 app.use(router);
 
-app.listen(port, () => {
-  console.log(`Server started on port ${port}`);
-});
+// app.listen(port, () => {
+//   console.log(`Server started on port ${port}`);
+// });
+module.exports = app;

@@ -8,7 +8,7 @@ const { v4: uuidv4 } = require("uuid");
 const saltRounds = 12;
 
 const regexPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,20}$/;
-const secretKey = process.env.SECRET_KEY
+const secretKey = process.env.SECRET_KEY;
 
 exports.register = async function (req, res, next) {
   try {
@@ -44,9 +44,7 @@ exports.register = async function (req, res, next) {
       secure: true,
     });
 
-    res
-      .status(201)
-      .json({ status: 201, message: "Registration Successful" });
+    res.status(201).json({ status: 201, message: "Registration Successful" });
   } catch (error) {
     next(error);
   }
@@ -66,7 +64,7 @@ exports.login = async function login(req, res, next) {
 
     if (!match) {
       console.log("Password does not match");
-      return res.status(401).json({ message: "Invalid credentials" });
+      throw res.status(401).json({ message: "Invalid credentials" });
     }
 
     const token = jwt.sign({ userId: user._id }, secretKey, {
@@ -90,4 +88,4 @@ exports.login = async function login(req, res, next) {
 
 exports.test = async function test(req, res, next) {
   res.send("test successful");
-}
+};
