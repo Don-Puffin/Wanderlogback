@@ -30,8 +30,8 @@ exports.authUser = async function authUser(req, res, next) {
         const username = user.username;
 
         req.currentUser = username;
-
         next();
+        //res.sendStatus(200);
       } catch (err) {
         console.log(err);
       }
