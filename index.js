@@ -11,7 +11,11 @@ const request = require("supertest");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
-app.use(cors());
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
+
 mongoose
   .connect(process.env.WANDERLOG_DB)
   .then(() => console.log("Database connected"))
