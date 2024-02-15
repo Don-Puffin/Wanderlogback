@@ -1,3 +1,4 @@
+
 const createError = require("http-errors");
 const Users = require("../models/user");
 const Profile = require("../models/profile");
@@ -10,6 +11,17 @@ const saltRounds = 12;
 
 const regexPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,20}$/;
 const secretKey = process.env.SECRET_KEY;
+
+// const redis = require('redis');
+// const redisPass = process.env.REDIS_PW;
+// const client = redis.createClient({
+//   password: redisPass,
+//   socket: {
+//       host: 'redis-15612.c55.eu-central-1-1.ec2.cloud.redislabs.com',
+//       port: 15612
+//   }
+// })
+
 
 exports.register = async function (req, res, next) {
   try {
@@ -77,7 +89,7 @@ exports.login = async function login(req, res, next) {
       console.log("Password does not match");
       throw res.status(401).json({ message: "Invalid credentials" });
     }
-
+    
     const token = jwt.sign({ userId: user._id }, secretKey, {
       expiresIn: "1h",
     });
@@ -100,4 +112,28 @@ exports.login = async function login(req, res, next) {
 exports.test = async function test(req, res, next) {
   console.log(req.currentUser);
   res.send("test successful");
+};
+
+exports.logout = async function (req, res, next){
+  // const decodedToken = req.decodedToken;
+  // const codedToken = req.codedToken;
+
+  try {
+    // // await redisClient.LPUSH('token', token);
+    // await client.connect()
+    // const token_key = codedToken;
+    // await client.set(token_key, codedToken);
+    // client.expireAt(token_key, decodedToken.exp);
+    // // await client.disconnect();
+
+    res.clearCookie("token",{
+      httpOnly:true,
+      sameSite:"None",
+      path:"/",
+      secure:true,
+    });
+    res.json({ status:200, message:"logout Sucessful"});
+  } catch (error){
+    next(error);
+  };
 };
