@@ -109,9 +109,16 @@ exports.login = async function login(req, res, next) {
   }
 };
 
-exports.test = async function test(req, res, next) {
-  console.log(req.currentUser);
-  res.send("test successful");
+exports.auth = async function test(req, res, next) {
+  try {
+    if (req.success = true) {
+    res.json({status: 200, username: req.currentUser})
+  } else {
+    res.json({status: 403})
+  }
+  } catch (error) {
+    next(error)
+  }
 };
 
 exports.logout = async function (req, res, next){

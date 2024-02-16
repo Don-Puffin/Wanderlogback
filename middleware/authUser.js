@@ -52,6 +52,7 @@ exports.authUser = async function authUser(req, res, next) {
         const username = user.username;
 
         req.currentUser = username;
+        req.success = true;
         next();
         //res.sendStatus(200);
       } catch (err) {
