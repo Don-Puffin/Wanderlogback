@@ -25,9 +25,11 @@ const userProfile = new mongoose.Schema({
 
     visitedPlaces: [
         {
-            lat: {type: String},
-            long: {type: String},
-            rating: {type: Number}
+            // lat: {type: String},
+            // long: {type: String},
+            // placeName: {type: String},
+            refId: { type: mongoose.Schema.Types.ObjectId, ref: "Place" },
+            userRating: {type: Number}
         }
     ],
 
