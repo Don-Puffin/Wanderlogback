@@ -1,20 +1,53 @@
 const Post = require("../models/post");
 const Profile = require("../models/profile");
+const Place = require("../models/place");
 
 exports.createPost = async function (req, res, next) {
   try {
-    const { postText, postLocation, postImage} = req.body;
+    //postLocation structure needs to be {name:,  lat:,  long:,  rating:}
+    const { postText, postLocationData, postImage} = req.body;
     
     const username = req.currentUser;
     const postDate = new Date()
     const likes = 0;
     const comments = [{}];
 
+    //check if place exists in Places
+    // if not Push place to places collection
+    // if exists, increment visits and calculate average rating and add
+    // place to visitedPlaces and postLocation via refId
+    // Check if place exists in Places
+    const existingPlace = await Place.findOne({ placeName: postLocationData.name });
+    let newPlace = {}
+
+    if (!existingPlace) {
+        // If place does not exist, push it to places collection
+        newPlace = new Place({
+            placeName: postLocationData.name,
+            lat: postLocationData.lat,
+            long: postLocationData.long,
+            ratings: [postLocationData.rating],
+            numberOfVisits: 1
+        });
+        await newPlace.save();
+    } else {
+        // If place exists, increment visits, calculate average rating, and add to visitedPlaces and postLocation via refId
+        existingPlace.numberOfVisits += 1;
+        existingPlace.ratings.push(postLocationData.rating);
+        const totalRatings = existingPlace.ratings.reduce((acc, curr) => acc + curr, 0);
+        existingPlace.avgRating = totalRatings / existingPlace.ratings.length;
+        await existingPlace.save();
+    }
+
+    // Add place to visitedPlaces and postLocation via refId
+    const newPlaceRefId = !existingPlace ? newPlace._id : existingPlace._id; // Assuming place exists or was just created
+    const newPlaceRef = { refId: newPlaceRefId, userRating: postLocationData.rating }; // Set the refId to the existing or newly created place      
+
     const newPost = new Post({
       username,
       postDate,
       postText,
-      postLocation,
+      postLocation: newPlaceRef,
       postImage,
       likes,
       comments,
@@ -27,7 +60,7 @@ exports.createPost = async function (req, res, next) {
 
     await Profile.findOneAndUpdate(
          { username: newPost.username }, // Modify to target the correct user
-         { $push: { userPosts: newPostRef } },
+         { $push: { userPosts: newPostRef, visitedPlaces: newPlaceRef } },
          { new: true }
     );
 
@@ -41,13 +74,32 @@ exports.getUserPosts = async function (req, res, next) {
   try {
     const username = req.currentUser;
 
-    const posts = await Profile.findOne({ username: username }).populate("userPosts.refId");
+    const profile = await Profile.findOne({ username: username }).
+    populate({ path: "userPosts.refId", 
+      populate: { 
+        path: "postLocation.refId", 
+        model: "Place" 
+      } 
+    });
 
-    if (!posts) {
-      return res.status(404).json({ message: "Post not found" });
-    }
+    const postData = profile.userPosts;
 
-    console.log(posts);
+    const posts = postData
+    .map(post => {
+      return {
+        _id: post._id,
+        username: post.refId.username,
+        postDate: post.refId.postDate,
+        postText: post.refId.postText,
+        postLocation: post.refId.postLocation.refId.placeName,
+        lat: post.refId.postLocation.refId.lat,
+        lng: post.refId.postLocation.refId.long,
+        rating: post.refId.postLocation.userRating,
+        postImage: post.refId.postImage,
+        likes: post.refId.likes,
+        comments: post.refId.comments
+      }
+    });
 
     res.json({ status: 200, posts });
   } catch (error) {
@@ -57,8 +109,7 @@ exports.getUserPosts = async function (req, res, next) {
 
 exports.getAllPosts = async function (req, res, next) {
   try {
-    const posts = await Post.find();
-    console.log(posts)
+    const posts = await Post.find().populate("postLocation.refId");
     res.json({ status: 200, posts });
   } catch (error) {
     next(error);
