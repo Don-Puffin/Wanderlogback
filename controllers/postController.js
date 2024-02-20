@@ -84,8 +84,7 @@ exports.getUserPosts = async function (req, res, next) {
 
     const postData = profile.userPosts;
 
-    const posts = postData
-    .map(post => {
+    const posts = postData.map(post => {
       return {
         _id: post._id,
         username: post.refId.username,
@@ -109,7 +108,27 @@ exports.getUserPosts = async function (req, res, next) {
 
 exports.getAllPosts = async function (req, res, next) {
   try {
-    const posts = await Post.find().populate("postLocation.refId");
+    const postData = await Post.find().populate("postLocation.refId");
+    console.log(postData)
+    
+    const posts = postData.map(post => {
+      return {
+        _id: post._id,
+        username: post.username,
+        postDate: post.postDate,
+        postText: post.postText,
+        postLocation: post.postLocation.refId.placeName,
+        lat: post.postLocation.refId.lat,
+        lng: post.postLocation.refId.long,
+        rating: post.postLocation.userRating,
+        postImage: post.postImage,
+        likes: post.likes,
+        comments: post.comments
+      }
+    });
+    console.log(posts)
+
+
     res.json({ status: 200, posts });
   } catch (error) {
     next(error);
