@@ -35,8 +35,8 @@ const userProfile = new mongoose.Schema({
 
     wantToGoPlaces: [
         {
-            lat: {type: String},
-            long: {type: String}
+            lat: {type: Number},
+            long: {type: Number}
         }
     ],
 
