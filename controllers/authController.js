@@ -46,8 +46,8 @@ exports.register = async function (req, res, next) {
       imageURL: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
       bio: "Hi! I'm using WanderLog.",
       userLocation: "",
-      visitedPlaces: [{}],
-      wantToGoPlaces: [{}],
+      visitedPlaces: [],
+      wantToGoPlaces: [],
       userPosts: []
     });
 
