@@ -112,9 +112,12 @@ exports.getAllPosts = async function (req, res, next) {
     console.log(postData)
     
     const posts = postData.map(post => {
+      const isOwned = post.username === req.currentUser;
+      console.log(isOwned)
       return {
         _id: post._id,
         username: post.username,
+        isOwned: isOwned,
         postDate: post.postDate,
         postText: post.postText,
         postLocation: post.postLocation.refId.placeName,
@@ -141,6 +144,8 @@ exports.updatePost = async function (req, res, next) {
     const postId = req.params.id;
     const post = await Post.findById(postId)
     const postUser = post.username
+    const placeId = post.postLocation.refId
+    const place = await Place.findById(placeId)
 
     if (req.currentUser !== postUser) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -148,7 +153,24 @@ exports.updatePost = async function (req, res, next) {
 
     const update = req.body;
 
-    const updatedPost = await Post.findByIdAndUpdate(postId, update, { new: true });
+
+    if (update.rating !== post.postLocation.userRating) {
+      ///TODO fix bug where user rating doesn't update in post
+      //update the user rating in the visited places in the Profile
+      await Profile.findOneAndUpdate(
+        { username: postUser },
+        { $set: { "visitedPlaces.$[elem].userRating": update.rating } },
+        { arrayFilters: [{ "elem.refId": placeId }] }
+      )
+      //add a new rating to the corresponding place in the Place collection
+      place.ratings.push(update.rating);
+      const totalRatings = place.ratings.reduce((acc, curr) => acc + curr, 0);
+      place.avgRating = totalRatings / place.ratings.length;
+      await place.save();
+    }
+
+
+    const updatedPost = await Post.findByIdAndUpdate(postId, update, {postLocation: {placeId, userRating: update.rating}}, { new: true });
 
     if (!updatedPost) {
       return res.status(404).json({ message: "Post not found" });
@@ -173,13 +195,15 @@ exports.deletePost = async function (req, res, next) {
 
     const deletedPost = await Post.findByIdAndDelete(postId);
 
+    const placeRef = deletedPost.postLocation.refId;
+
     if (!deletedPost) {
       return res.status(404).json({ message: "Post not found" });
     }
 
     await Profile.findOneAndUpdate(
         { username: deletedPost.username }, // Modify to target the correct user
-        { $pull: { userPosts: {refId: postId } } }
+        { $pull: { userPosts: {refId: postId }, visitedPlaces: {refId: placeRef}  } }
    );
 
     res.json({ status: 200, message: "Post deleted successfully" });

@@ -6,6 +6,10 @@ exports.getVisitedPlaces = async function (req, res, next) {
     const profile = await Profile.findOne({ username: username }).populate("visitedPlaces.refId");
     const places = profile.visitedPlaces;
 
+    if (!places) {
+        return res.status(404).json({ message: "Places not found" });
+    }
+    
     const mapLocations = places.map(place => {
         return {
             name: place.refId.placeName,
