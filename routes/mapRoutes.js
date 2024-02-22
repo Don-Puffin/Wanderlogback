@@ -4,7 +4,7 @@ const {getVisitedPlaces, topRatedPlaces} = require ("../controllers/mapControlle
 const {authUser} = require ("../middleware/authUser")
 
 // getVisitedPlaces
-router.get("/visitedPlaces", authUser, getVisitedPlaces);
+router.get("/visitedPlaces/:id", authUser, getVisitedPlaces);
 router.get("/topRatedPlaces", authUser, topRatedPlaces);
 
 module.exports = router; ""
