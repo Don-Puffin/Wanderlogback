@@ -4,7 +4,13 @@ const Place = require("../models/place");
 exports.getVisitedPlaces = async function (req, res, next) {
     let username = "";
     console.log("id in map function", req.params.id)
-    req.params.id ? username = req.params.id : username = req.currentUser;
+    if (req.params.id !== null && req.params.id !== "null") {
+        username = req.params.id
+    } else {
+        username = req.currentUser;
+    }
+    console.log(username)
+    console.log(req.currentUser)
     const profile = await Profile.findOne({ username: username }).populate("visitedPlaces.refId");
     let places = [{}]
 
