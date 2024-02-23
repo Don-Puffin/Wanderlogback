@@ -20,7 +20,7 @@ app.use(cors({
 
 mongoose
   .connect(process.env.WANDERLOG_DB)
-  // .then(() => console.log("Database connected"))
+  .then(() => console.log("Database connected"))
   .catch((err) => console.log(err));
 
 app.use(express.json());
@@ -31,7 +31,7 @@ app.use("/post", postRouter);
 app.use("/profile", profileRouter);
 app.use("/map", mapRouter);
 
-// app.listen(port, () => {
-//   console.log(`Server started on port ${port}`);
-// });
+app.listen(port, () => {
+  console.log(`Server started on port ${port}`);
+});
 module.exports = app;
