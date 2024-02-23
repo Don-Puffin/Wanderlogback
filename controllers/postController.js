@@ -17,7 +17,7 @@ exports.createPost = async function (req, res, next) {
     // if exists, increment visits and calculate average rating and add
     // place to visitedPlaces and postLocation via refId
     // Check if place exists in Places
-    const existingPlace = await Place.findOne({ placeName: postLocationData.name });
+    const existingPlace = await Place.findOne({ placeName: postLocationData.name, lat: postLocationData.lat, long: postLocationData.long });
     let newPlace = {}
 
     if (!existingPlace) {
@@ -153,7 +153,6 @@ exports.updatePost = async function (req, res, next) {
 
     const update = req.body;
 
-
     if (update.rating !== post.postLocation.userRating) {
       ///TODO fix bug where user rating doesn't update in post
       //update the user rating in the visited places in the Profile
@@ -169,8 +168,11 @@ exports.updatePost = async function (req, res, next) {
       await place.save();
     }
 
-
-    const updatedPost = await Post.findByIdAndUpdate(postId, update, {postLocation: {placeId, userRating: update.rating}}, { new: true });
+    const updatedPost = await Post.findByIdAndUpdate(postId, 
+      { $set:
+        {postLocation: {refId: placeId, userRating: update.rating }},
+        ...update
+      }, { new: true });
 
     if (!updatedPost) {
       return res.status(404).json({ message: "Post not found" });
