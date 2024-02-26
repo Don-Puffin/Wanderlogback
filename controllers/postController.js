@@ -43,8 +43,12 @@ exports.createPost = async function (req, res, next) {
     const newPlaceRefId = !existingPlace ? newPlace._id : existingPlace._id; // Assuming place exists or was just created
     const newPlaceRef = { refId: newPlaceRefId, userRating: postLocationData.rating }; // Set the refId to the existing or newly created place      
 
+    const profileData = await Profile.findOne({ username: username });
+    const profilePic = profileData.imageURL
+
     const newPost = new Post({
       username,
+      userImageURL: profilePic,
       postDate,
       postText,
       postLocation: newPlaceRef,
@@ -88,6 +92,7 @@ exports.getUserPosts = async function (req, res, next) {
       return {
         _id: post._id,
         username: post.refId.username,
+        userImageURL: post.refId.userImageURL,
         postDate: post.refId.postDate,
         postText: post.refId.postText,
         postLocation: post.refId.postLocation.refId.placeName,
@@ -117,6 +122,7 @@ exports.getAllPosts = async function (req, res, next) {
       return {
         _id: post._id,
         username: post.username,
+        userImageURL: post.userImageURL,
         isOwned: isOwned,
         postDate: post.postDate,
         postText: post.postText,

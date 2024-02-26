@@ -2,7 +2,8 @@ const mongoose = require("mongoose")
 
 
 const post = new mongoose.Schema({
-    username: {type: String, required: true},   
+    username: {type: String, required: true},
+    userImageURL: {type: String, required: true},   
     postDate: {type: Date, required: true},     
     postText: {type: String, required: true},
     postLocation: {
