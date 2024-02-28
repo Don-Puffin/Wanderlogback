@@ -8,7 +8,7 @@ exports.getProfile = async function (req, res, next) {
         const profile = await Profile.findOne({ username: username })
 
         if (!profile) {
-            return res.status(404).json({ message: "Profile not found" });
+            return res.status(404).json({ message: "Profile not found." });
         }
 
         res.json({ status: 200, profile });
@@ -24,7 +24,7 @@ exports.getOtherProfile = async function (req, res, next) {
         const profile = await Profile.findOne({ username: username })
 
         if (!profile) {
-            return res.status(404).json({ message: "Profile not found" });
+            return res.status(404).json({ message: "Profile not found." });
         }
 
         res.json({ status: 200, profile });
@@ -43,7 +43,7 @@ exports.editProfile = async function (req, res, next) {
         const username = req.currentUser;
         const { imageURL, bio, userLocation} = req.body;
         await Profile.findOneAndUpdate({username: username}, { imageURL, bio, userLocation});
-        res.status(201).json({ status: 201, message: "Profile updateed successfully"});
+        res.status(201).json({ status: 201, message: "Profile updated successfully!"});
     } catch (error) {
         next(error);
     }

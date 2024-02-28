@@ -3,14 +3,11 @@ const Place = require("../models/place");
 
 exports.getVisitedPlaces = async function (req, res, next) {
     let username = "";
-    console.log("id in map function", req.params.id)
     if (req.params.id !== null && req.params.id !== "null") {
         username = req.params.id
     } else {
         username = req.currentUser;
     }
-    console.log(username)
-    console.log(req.currentUser)
     const profile = await Profile.findOne({ username: username }).populate("visitedPlaces.refId");
     let places = [{}]
 
@@ -33,12 +30,23 @@ exports.getVisitedPlaces = async function (req, res, next) {
         })
     }
 
-    console.log(mapLocations);
-
     res.json({ status: 200, mapLocations });
 }
 
 exports.topRatedPlaces = async function (req, res, next) {
     const places = await Place.find({avgRating: {$gte: 4}});
-    res.json({ status: 200, places });
+    let mapLocations = []
+
+    if (places.length > 0) {
+        mapLocations = places.map(place => {
+            return {
+                name: place.placeName,
+                lat: place.lat,
+                lng: place.long,
+                rating: place.avgRating
+            }
+        })
+    }
+
+    res.json({ status: 200, mapLocations });
 }
