@@ -44,7 +44,7 @@ exports.createPost = async function (req, res, next) {
     const newPlaceRef = { refId: newPlaceRefId, userRating: postLocationData.rating }; // Set the refId to the existing or newly created place      
 
     const profileData = await Profile.findOne({ username: username });
-    const profilePic = profileData.imageURL
+    const profilePic = profileData.imageURL;
 
     const newPost = new Post({
       username,
@@ -68,9 +68,10 @@ exports.createPost = async function (req, res, next) {
          { new: true }
     );
 
-    res.status(201).json({ status: 201, message: "Post created successfully", post: newPost });
+    res.status(201).json({ status: 201, message: "Post created successfully!", post: newPost });
   } catch (error) {
-    next(error);
+    console.log(error);
+    return res.status(500).json({ status: 500, message: "Post could not be created." }); // Send a generic error message to the client
   }
 };
 
@@ -90,7 +91,7 @@ exports.getUserPosts = async function (req, res, next) {
 
     const posts = postData.map(post => {
       return {
-        _id: post._id,
+        id: post.id,
         username: post.refId.username,
         userImageURL: post.refId.userImageURL,
         postDate: post.refId.postDate,
@@ -114,13 +115,11 @@ exports.getUserPosts = async function (req, res, next) {
 exports.getAllPosts = async function (req, res, next) {
   try {
     const postData = await Post.find().populate("postLocation.refId");
-    console.log(postData)
     
     const posts = postData.map(post => {
       const isOwned = post.username === req.currentUser;
-      console.log(isOwned)
       return {
-        _id: post._id,
+        id: post.id,
         username: post.username,
         userImageURL: post.userImageURL,
         isOwned: isOwned,
@@ -135,7 +134,6 @@ exports.getAllPosts = async function (req, res, next) {
         comments: post.comments
       }
     });
-    console.log(posts)
 
 
     res.json({ status: 200, posts });
@@ -154,7 +152,7 @@ exports.updatePost = async function (req, res, next) {
     const place = await Place.findById(placeId)
 
     if (req.currentUser !== postUser) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({ message: "Unauthorized." });
     }
 
     const update = req.body;
@@ -181,10 +179,10 @@ exports.updatePost = async function (req, res, next) {
       }, { new: true });
 
     if (!updatedPost) {
-      return res.status(404).json({ message: "Post not found" });
+      return res.status(404).json({ message: "Post not found." });
     }
 
-    res.json({ status: 200, message: "Post updated successfully", post: updatedPost });
+    res.json({ status: 200, message: "Post updated successfully!", post: updatedPost });
   } catch (error) {
     next(error);
   }
@@ -198,7 +196,7 @@ exports.deletePost = async function (req, res, next) {
     const postUser = post.username
 
     if (req.currentUser !== postUser) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({ message: "Unauthorized." });
     }
 
     const deletedPost = await Post.findByIdAndDelete(postId);
@@ -206,7 +204,7 @@ exports.deletePost = async function (req, res, next) {
     const placeRef = deletedPost.postLocation.refId;
 
     if (!deletedPost) {
-      return res.status(404).json({ message: "Post not found" });
+      return res.status(404).json({ message: "Post not found." });
     }
 
     await Profile.findOneAndUpdate(
@@ -214,7 +212,7 @@ exports.deletePost = async function (req, res, next) {
         { $pull: { userPosts: {refId: postId }, visitedPlaces: {refId: placeRef}  } }
    );
 
-    res.json({ status: 200, message: "Post deleted successfully" });
+    res.json({ status: 200, message: "Post deleted successfully!" });
   } catch (error) {
     next(error);
   }

@@ -10,6 +10,7 @@ const { v4: uuidv4 } = require("uuid");
 const saltRounds = 12;
 
 const regexPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,20}$/;
+const regexUsername = /^[a-z\d-]{3,20}$/;
 const secretKey = process.env.SECRET_KEY;
 
 // const redis = require('redis');
@@ -27,14 +28,20 @@ exports.register = async function (req, res, next) {
   try {
     const { username, password } = req.body; // request from frontend
 
+    if (!regexUsername.test(username)) {
+      return res
+        .status(400)
+        .json({ message: "Username must be 3-20 characters long and cannot include capital letters." });
+    }
+
     const existingUser = await Users.findOne({ username });
 
     if (existingUser) {
-      return res.status(400).json({ message: "Username already exists." });
+      return res.status(400).json({ status: 400, message: "Username already exists." });
     }
     if (!regexPassword.test(password)) {
       return res.status(400).json({
-        message:
+        status: 400,message:
           "Password must be 8-20 characters long and contain at least one letter, one number, and one special character.",
       });
     }
@@ -67,9 +74,10 @@ exports.register = async function (req, res, next) {
       secure: true,
     });
 
-    res.status(201).json({ status: 201, message: "Registration Successful" });
+    res.status(201).json({ status: 201, message: "Registration successful!" });
   } catch (error) {
-    next(error);
+    console.log(error);
+    return res.status(500).json({ status: 500, message: "Internal server error." }); // Send a generic error message to the client
   }
 };
 exports.login = async function login(req, res, next) {
@@ -80,14 +88,14 @@ exports.login = async function login(req, res, next) {
 
     if (!user) {
       console.error("The username was not found");
-      throw createError(401, "The username was not found");
+      return res.status(401).json({ message: "Invalid username or password." });
     }
 
     const match = bcrypt.compare(password, user.password);
 
     if (!match) {
       console.log("Password does not match");
-      throw res.status(401).json({ message: "Invalid credentials" });
+      return res.status(401).json({ message: "Invalid username or password." });
     }
     
     const token = jwt.sign({ userId: user._id }, secretKey, {
@@ -103,7 +111,7 @@ exports.login = async function login(req, res, next) {
       secure: true,
     });
 
-    res.json({ status: 200, message: "Login Successful" });
+    res.json({ status: 200, message: "Login successful!" });
   } catch (error) {
     next(error);
   }
@@ -139,7 +147,7 @@ exports.logout = async function (req, res, next){
       path:"/",
       secure:true,
     });
-    res.json({ status:200, message:"logout Sucessful"});
+    res.json({ status:200, message:"Logout successful!"});
   } catch (error){
     next(error);
   };
