@@ -85,8 +85,6 @@ exports.login = async function login(req, res, next) {
   try {
     const { username, password } = req.body;
 
-    console.log(password)
-
     const user = await Users.findOne({ username });
 
     if (!user) {
@@ -94,12 +92,8 @@ exports.login = async function login(req, res, next) {
       return res.status(401).json({ message: "Invalid username or password." });
     }
 
-    console.log(password, user.password)
-
     const match = await bcrypt.compare(password, user.password);
   
-    console.log(match);
-
     if (!match) {
       console.log("Password does not match");
       return res.status(401).json({ message: "Invalid username or password." });
