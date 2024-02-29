@@ -13,6 +13,7 @@ const regexPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,20}$/;
 const regexUsername = /^[a-z\d-]{3,20}$/;
 const secretKey = process.env.SECRET_KEY;
 
+// Redis code for future improvements
 // const redis = require('redis');
 // const redisPass = process.env.REDIS_PW;
 // const client = redis.createClient({
@@ -26,7 +27,7 @@ const secretKey = process.env.SECRET_KEY;
 
 exports.register = async function (req, res, next) {
   try {
-    const { username, password } = req.body; // request from frontend
+    const { username, password } = req.body; 
 
     if (!regexUsername.test(username)) {
       return res
@@ -42,12 +43,12 @@ exports.register = async function (req, res, next) {
     if (!regexPassword.test(password)) {
       return res.status(400).json({
         status: 400,message:
-          "Password must be 8-20 characters long and contain at least one letter, one number, and one special character.",
+          "Password must be 8-20 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character.",
       });
     }
 
     const hashedPassword = await bcrypt.hash(password, saltRounds); // takes password and hashes the password, encryption
-    const newUser = new Users({ username, password: hashedPassword }); // creates an instance of the userModel with the request from the frontend
+    const newUser = new Users({ username, password: hashedPassword });
     const newUserProfile = new Profile({ 
       username: username,
       imageURL: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
@@ -84,6 +85,8 @@ exports.login = async function login(req, res, next) {
   try {
     const { username, password } = req.body;
 
+    console.log(password)
+
     const user = await Users.findOne({ username });
 
     if (!user) {
@@ -91,7 +94,11 @@ exports.login = async function login(req, res, next) {
       return res.status(401).json({ message: "Invalid username or password." });
     }
 
-    const match = bcrypt.compare(password, user.password);
+    console.log(password, user.password)
+
+    const match = await bcrypt.compare(password, user.password);
+  
+    console.log(match);
 
     if (!match) {
       console.log("Password does not match");
@@ -102,7 +109,6 @@ exports.login = async function login(req, res, next) {
       expiresIn: "3h",
     });
 
-    // Set the token in a cookie
     res.cookie("token", token, {
       httpOnly: true,
       expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
@@ -130,16 +136,15 @@ exports.auth = async function test(req, res, next) {
 };
 
 exports.logout = async function (req, res, next){
-  // const decodedToken = req.decodedToken;
-  // const codedToken = req.codedToken;
 
   try {
-    // // await redisClient.LPUSH('token', token);
+    // Redis code for future improvements
+    // await redisClient.LPUSH('token', token);
     // await client.connect()
     // const token_key = codedToken;
     // await client.set(token_key, codedToken);
     // client.expireAt(token_key, decodedToken.exp);
-    // // await client.disconnect();
+    // await client.disconnect();
 
     res.clearCookie("token",{
       httpOnly:true,

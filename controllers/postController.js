@@ -60,10 +60,10 @@ exports.createPost = async function (req, res, next) {
     await newPost.save();
 
     const findPostId = await Post.findOne({ _id: newPost._id });
-    const newPostRef = { refId: findPostId._id }; // Set the refId to the findPostId._id;
+    const newPostRef = { refId: findPostId._id }; 
 
     await Profile.findOneAndUpdate(
-         { username: newPost.username }, // Modify to target the correct user
+         { username: newPost.username }, 
          { $push: { userPosts: newPostRef, visitedPlaces: newPlaceRef } },
          { new: true }
     );
@@ -71,7 +71,7 @@ exports.createPost = async function (req, res, next) {
     res.status(201).json({ status: 201, message: "Post created successfully!", post: newPost });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ status: 500, message: "Post could not be created." }); // Send a generic error message to the client
+    return res.status(500).json({ status: 500, message: "Post could not be created." }); 
   }
 };
 
@@ -158,7 +158,6 @@ exports.updatePost = async function (req, res, next) {
     const update = req.body;
 
     if (update.rating !== post.postLocation.userRating) {
-      ///TODO fix bug where user rating doesn't update in post
       //update the user rating in the visited places in the Profile
       await Profile.findOneAndUpdate(
         { username: postUser },
@@ -208,7 +207,7 @@ exports.deletePost = async function (req, res, next) {
     }
 
     await Profile.findOneAndUpdate(
-        { username: deletedPost.username }, // Modify to target the correct user
+        { username: deletedPost.username }, 
         { $pull: { userPosts: {refId: postId }, visitedPlaces: {refId: placeRef}  } }
    );
 

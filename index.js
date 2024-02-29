@@ -31,6 +31,7 @@ app.use("/post", postRouter);
 app.use("/profile", profileRouter);
 app.use("/map", mapRouter);
 
+// Comment out if running tests on supertest
 app.listen(port, () => {
   console.log(`Server started on port ${port}`);
 });
