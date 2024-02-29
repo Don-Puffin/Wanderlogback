@@ -7,9 +7,6 @@ const post = new mongoose.Schema({
     postDate: {type: Date, required: true},     
     postText: {type: String, required: true},
     postLocation: {
-        // name: {type: String, required: true},
-        // lat: {type: String, required: true},
-        // long: {type: String, required: true},
         refId: { type: mongoose.Schema.Types.ObjectId, ref: "Place" },
         userRating: {type: Number}
     },
