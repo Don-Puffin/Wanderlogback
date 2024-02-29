@@ -27,7 +27,8 @@ exports.createPost = async function (req, res, next) {
             lat: postLocationData.lat,
             long: postLocationData.long,
             ratings: [postLocationData.rating],
-            numberOfVisits: 1
+            numberOfVisits: 1,
+            avgRating: postLocationData.rating
         });
         await newPlace.save();
     } else {
